@@ -30,8 +30,10 @@ Routecraft is a sophisticated solution designed to optimize the routes of garbag
 2. Create a virtual environment:
 
    ```sh
+   Delete the "env" folder if present already, and then follow the below steps
    python -m venv env
    On Windows use `env\Scripts\activate` # On Linux use `env/bin/activate`
+   Try using Command prompt if Windows Shell is showing error for the above command
    ```
 
 3. Install the required packages:
