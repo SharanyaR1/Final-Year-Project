@@ -211,8 +211,9 @@ function calculateOptimizedRoute() {
         return [parseFloat(dustbin.latitude), parseFloat(dustbin.longitude)];
       });
 
-      var data = {
+      var requestData = {
         dustbins: dustbinsWithCoords,
+        num_vehicles: 3, // Specify the number of vehicles
       };
 
       fetch("http://127.0.0.1:5000/plan_optimized_route", {
@@ -220,7 +221,7 @@ function calculateOptimizedRoute() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(requestData),
       })
         .then(function (response) {
           if (response.ok) {
@@ -230,27 +231,34 @@ function calculateOptimizedRoute() {
           }
         })
         .then(function (data) {
-          var optimizedRoute = data.optimized_route;
-          var optimizedRouteCoords = optimizedRoute.map(function (index) {
-            return dustbinsCoords[index];
+          var routes = data.optimized_routes;
+          var colors = ["red", "blue", "green"]; // Colors for different routes
+
+          routes.forEach(function (route, index) {
+            var routeCoords = route.map(function (routeIndex) {
+              return dustbinsCoords[routeIndex];
+            });
+
+            var routeSequence = route.join(" -> ");
+            document.getElementById("optimizedRouteSequence").textContent +=
+              "Vehicle " + (index + 1) + ": " + routeSequence + "\n";
+
+            // Draw polyline for each route
+            var routePolyline = L.polyline(routeCoords, {
+              color: colors[index % colors.length],
+            }).addTo(map);
+            map.fitBounds(routePolyline.getBounds());
           });
-
-          var optimizedRouteSequence = optimizedRoute.join(" -> ");
-          document.getElementById("optimizedRouteSequence").textContent =
-            optimizedRouteSequence;
-
-          // Draw polyline for optimized route
-          var optimizedRoutePolyline = L.polyline(optimizedRouteCoords, {
-            color: "red",
-          }).addTo(map);
-          map.fitBounds(optimizedRoutePolyline.getBounds());
         })
         .catch(function (error) {
-          alert("An error occurred: " + error);
+          alert(
+            "An error occurred while calculating the optimized route: " +
+              error.message
+          );
         });
     })
     .catch(function (error) {
-      alert("An error occurred: " + error);
+      alert("An error occurred while fetching dustbins: " + error.message);
     });
 }
 

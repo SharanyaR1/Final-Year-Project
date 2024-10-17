@@ -1,10 +1,10 @@
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
-def create_data_model(dustbins):
+def create_data_model(dustbins, num_vehicles=3):
     """Stores the data for the problem."""
     data = {}
     data['locations'] = [(float(d[0]), float(d[1])) for d in dustbins]
-    data['num_vehicles'] = 1
+    data['num_vehicles'] = num_vehicles
     data['depot'] = 0
     return data
 
@@ -22,9 +22,10 @@ def compute_euclidean_distance_matrix(locations):
                     (from_node[1] - to_node[1])**2)**0.5
     return distances
 
-def plan_optimized_route(dustbins):
+
+def plan_optimized_route(dustbins, num_vehicles=3):
     """Solve the VRP problem."""
-    data = create_data_model(dustbins)
+    data = create_data_model(dustbins, num_vehicles)
     distance_matrix = compute_euclidean_distance_matrix(data['locations'])
 
     # Create the routing index manager.
@@ -54,11 +55,14 @@ def plan_optimized_route(dustbins):
     if not solution:
         return []
 
-    # Get the route.
-    route = []
-    index = routing.Start(0)
-    while not routing.IsEnd(index):
+    # Get the routes for each vehicle.
+    routes = []
+    for vehicle_id in range(data['num_vehicles']):
+        index = routing.Start(vehicle_id)
+        route = []
+        while not routing.IsEnd(index):
+            route.append(manager.IndexToNode(index))
+            index = solution.Value(routing.NextVar(index))
         route.append(manager.IndexToNode(index))
-        index = solution.Value(routing.NextVar(index))
-    route.append(manager.IndexToNode(index))
-    return route
+        routes.append(route)
+    return routes

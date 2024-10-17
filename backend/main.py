@@ -38,11 +38,20 @@ def get_adjacency_matrix():
 
 @app.route("/plan_optimized_route", methods=["POST"])
 def plan_optimized_route_handler():
-    dustbins_data = request.json.get("dustbins")
-    dustbins = [(d.get('latitude'), d.get('longitude'), d.get('capacity')) for d in dustbins_data]
-    optimized_route = aux_functions.plan_optimized_route(dustbins)
-    return jsonify({"optimized_route": optimized_route}), 200
+    try:
+        dustbins_data = request.json.get("dustbins")
+        num_vehicles = request.json.get("num_vehicles", 3)  # Default to 3 vehicles if not specified
 
+        if not dustbins_data:
+            return jsonify({"error": "No dustbins data provided"}), 400
+
+        # Convert dustbins_data to a list of tuples
+        dustbins = [(d['latitude'], d['longitude'], d['capacity']) for d in dustbins_data]
+
+        optimized_routes = aux_functions.plan_optimized_route(dustbins, num_vehicles)
+        return jsonify({"optimized_routes": optimized_routes}), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to plan optimized route: {str(e)}"}), 500
 
 @app.route("/add_random_dustbins", methods=["POST"])
 def add_random_dustbins():
@@ -119,7 +128,6 @@ def delete_dustbin(user_id):
 
     db.session.delete(dustbin)
     db.session.commit()
-
     return jsonify({"message": "Dustbin deleted!"}), 200
 
 # def create_dustbin_from_thingspeak():
