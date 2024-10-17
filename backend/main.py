@@ -2,7 +2,7 @@ from flask import request, jsonify,render_template,Flask
 from config import app, db
 from models import Dustbin
 import aux_functions
-import thingspeak
+# import thingspeak
 import random
 #change to your relative system path 
 app = Flask(__name__, template_folder='../frontend', static_folder='../static')
@@ -122,20 +122,20 @@ def delete_dustbin(user_id):
 
     return jsonify({"message": "Dustbin deleted!"}), 200
 
-def create_dustbin_from_thingspeak():
-    latitude,longitude,capacity = thingspeak.dustbins()
-    new_dustbin = Dustbin(latitude=latitude, longitude=longitude, capacity=capacity)
-    try:
-        db.session.add(new_dustbin)
-        db.session.commit()
-    except Exception as e:
-        return jsonify({"message": str(e)}), 400
+# def create_dustbin_from_thingspeak():
+#     latitude,longitude,capacity = thingspeak.dustbins()
+#     new_dustbin = Dustbin(latitude=latitude, longitude=longitude, capacity=capacity)
+#     try:
+#         db.session.add(new_dustbin)
+#         db.session.commit()
+#     except Exception as e:
+#         return jsonify({"message": str(e)}), 400
 
-    return jsonify({"message": "Dustbin created!"}), 201
+#     return jsonify({"message": "Dustbin created!"}), 201
 
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-        create_dustbin_from_thingspeak()
+        # create_dustbin_from_thingspeak()
     
     app.run(debug=True)

@@ -59,32 +59,63 @@ function submitDustbin() {
     });
 }
 
-function submitRandomDustbins() {
-  var numDustbins = document.getElementById("numDustbins").value;
-
-  if (!numDustbins) {
-    alert("Please enter the number of random dustbins.");
-    return;
-  }
-
-  var data = {
-    numDustbins: numDustbins,
-  };
-
-  fetch("/add_random_dustbins", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
+function calculateOptimizedRoute() {
+  fetch("/dustbins")
     .then(function (response) {
-      if (response.status === 201) {
-        alert("Random dustbins added successfully!");
-        loadDustbins();
+      if (response.ok) {
+        return response.json();
       } else {
-        alert("Failed to add random dustbins.");
+        throw new Error("Failed to fetch dustbins.");
       }
+    })
+    .then(function (data) {
+      var dustbins = data.dustbins;
+
+      var dustbinsWithCoords = dustbins.filter(function (dustbin) {
+        return dustbin.latitude && dustbin.longitude;
+      });
+
+      var dustbinsCoords = dustbinsWithCoords.map(function (dustbin) {
+        return [parseFloat(dustbin.latitude), parseFloat(dustbin.longitude)];
+      });
+
+      var data = {
+        dustbins: dustbinsWithCoords,
+      };
+
+      fetch("http://127.0.0.1:5000/plan_optimized_route", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then(function (response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error("Failed to calculate optimized route.");
+          }
+        })
+        .then(function (data) {
+          var optimizedRoute = data.optimized_route;
+          var optimizedRouteCoords = optimizedRoute.map(function (index) {
+            return dustbinsCoords[index];
+          });
+
+          var optimizedRouteSequence = optimizedRoute.join(" -> ");
+          document.getElementById("optimizedRouteSequence").textContent =
+            optimizedRouteSequence;
+
+          // Draw polyline for optimized route
+          var optimizedRoutePolyline = L.polyline(optimizedRouteCoords, {
+            color: "red",
+          }).addTo(map);
+          map.fitBounds(optimizedRoutePolyline.getBounds());
+        })
+        .catch(function (error) {
+          alert("An error occurred: " + error);
+        });
     })
     .catch(function (error) {
       alert("An error occurred: " + error);

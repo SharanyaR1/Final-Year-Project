@@ -1,57 +1,64 @@
-import networkx as nx
-from geopy.distance import geodesic
-import itertools
+from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+
+def create_data_model(dustbins):
+    """Stores the data for the problem."""
+    data = {}
+    data['locations'] = [(float(d[0]), float(d[1])) for d in dustbins]
+    data['num_vehicles'] = 1
+    data['depot'] = 0
+    return data
+
+def compute_euclidean_distance_matrix(locations):
+    """Creates callback to return distance between points."""
+    distances = {}
+    for from_counter, from_node in enumerate(locations):
+        distances[from_counter] = {}
+        for to_counter, to_node in enumerate(locations):
+            if from_counter == to_counter:
+                distances[from_counter][to_counter] = 0
+            else:
+                distances[from_counter][to_counter] = (
+                    (from_node[0] - to_node[0])**2 +
+                    (from_node[1] - to_node[1])**2)**0.5
+    return distances
+
 def plan_optimized_route(dustbins):
-    """
-    Plan optimized route for waste collection based on dustbin coordinates and capacities.
-    Returns the sequence of dustbin IDs in the optimized order.
-    """
-    # Simple greedy algorithm for TSP
-    # Start from the first dustbin and find the closest dustbin iteratively
-    print(dustbins)
-    dict={}
-    for i in range(len(dustbins)):
-        dict[i]={}
-        dict[i]['latitude']=dustbins[i][0]
-        dict[i]['longitude']=dustbins[i][1]
-        dict[i]['capacity']=dustbins[i][2]
-    print(dict)
-        
-    # Create a weighted graph
-    G = nx.Graph()
+    """Solve the VRP problem."""
+    data = create_data_model(dustbins)
+    distance_matrix = compute_euclidean_distance_matrix(data['locations'])
 
-    # Add nodes to the graph
-    for bin_id, attrs in dict.items():
-        G.add_node(bin_id, **attrs)
+    # Create the routing index manager.
+    manager = pywrapcp.RoutingIndexManager(len(data['locations']),
+                                           data['num_vehicles'], data['depot'])
 
-    # Calculate and add weighted edges to the graph considering effective capacity
-    for start, start_attrs in dict.items():
-        for end, end_attrs in dict.items():
-            if start != end:
-                dist = geodesic((start_attrs['latitude'], start_attrs['longitude']), (end_attrs['latitude'], end_attrs['longitude'])).kilometers
-                start_remaining = start_attrs['capacity']
-                end_remaining = end_attrs['capacity']
-                weight = dist / min(start_remaining, end_remaining)
-                G.add_edge(start, end, weight=weight)
+    # Create Routing Model.
+    routing = pywrapcp.RoutingModel(manager)
 
-    # Find the optimal path visiting all bins in the network
-    all_bins = list(dict.keys())
-    all_paths = []
-    starting_bin = max(dict, key=lambda x: dict[x]['capacity'])  # Start from the most filled bin
-    for perm in itertools.permutations(all_bins, len(all_bins)):
-        if perm[0] == starting_bin:
-            try:
-                path_length = sum(nx.astar_path_length(G, perm[i], perm[i + 1], weight='weight') for i in range(len(perm) - 1))
-                all_paths.append((perm, path_length))
-            except nx.NetworkXNoPath:
-                pass
+    def distance_callback(from_index, to_index):
+        """Returns the distance between the two nodes."""
+        from_node = manager.IndexToNode(from_index)
+        to_node = manager.IndexToNode(to_index)
+        return distance_matrix[from_node][to_node]
 
-    if all_paths:
-        optimal_path = min(all_paths, key=lambda x: x[1])
-        print("Optimal Path Routing Order considering all bins and their capacities:", list(optimal_path[0]))
-        print("Path Length:", optimal_path[1])
-    else:
-        print("No feasible path found.")
-        
-    #print(optimized_route)
-    return list(optimal_path[0])
+    transit_callback_index = routing.RegisterTransitCallback(distance_callback)
+    routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+
+    # Setting first solution heuristic.
+    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+    search_parameters.first_solution_strategy = (
+        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+
+    # Solve the problem.
+    solution = routing.SolveWithParameters(search_parameters)
+
+    if not solution:
+        return []
+
+    # Get the route.
+    route = []
+    index = routing.Start(0)
+    while not routing.IsEnd(index):
+        route.append(manager.IndexToNode(index))
+        index = solution.Value(routing.NextVar(index))
+    route.append(manager.IndexToNode(index))
+    return route
