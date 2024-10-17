@@ -3,9 +3,9 @@ from config import app, db
 from models import Dustbin
 import aux_functions
 import thingspeak
-
+import random
 #change to your relative system path 
-app = Flask(__name__, static_folder="C:\\Users\\shrchand\\Downloads\\Routecraft-A-garbage-truck-route-optimization-system.-main\\Routecraft-A-garbage-truck-route-optimization-system.-main\\frontend", template_folder='C:\\Users\\shrchand\\Downloads\\Routecraft-A-garbage-truck-route-optimization-system.-main\\Routecraft-A-garbage-truck-route-optimization-system.-main\\frontend')
+app = Flask(__name__, template_folder='../frontend', static_folder='../static')
 
 # Configure SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dustbins.db'
@@ -42,6 +42,28 @@ def plan_optimized_route_handler():
     dustbins = [(d.get('latitude'), d.get('longitude'), d.get('capacity')) for d in dustbins_data]
     optimized_route = aux_functions.plan_optimized_route(dustbins)
     return jsonify({"optimized_route": optimized_route}), 200
+
+
+@app.route("/add_random_dustbins", methods=["POST"])
+def add_random_dustbins():
+    num_dustbins = request.json.get("numDustbins")
+    if not num_dustbins:
+        return jsonify({"message": "Number of dustbins is required"}), 400
+
+    # Define the bounding box for Banashankari area of Bangalore
+    min_lat, max_lat = 12.92, 12.95
+    min_lon, max_lon = 77.54, 77.58
+    dustbins = []
+    for _ in range(int(num_dustbins)):
+        latitude = random.uniform(min_lat, max_lat)
+        longitude = random.uniform(min_lon, max_lon)
+        capacity = random.randint(1, 100) 
+        dustbin = Dustbin(latitude=latitude, longitude=longitude, capacity=capacity)
+        dustbins.append(dustbin)
+        db.session.add(dustbin)  # Add the dustbin to the session
+    db.session.commit()  # Commit the session to save all dustbins
+    return jsonify({"message": f"{num_dustbins} random dustbins added"}), 201
+
 
 @app.route("/dustbins", methods=["GET"])
 def get_dustbins():
