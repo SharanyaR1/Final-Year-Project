@@ -6,7 +6,9 @@
 <title>Dustbin Management System</title>
 <link rel="stylesheet" href="{{ url_for('static',filename='styles.css') }}">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -26,7 +28,6 @@
     </div>
     <button type="submit">Add Dustbin</button>
   </form>
-
   <h2>Add Random Dustbins</h2>
   <form id="randomDustbinForm">
     <div class="form-group">

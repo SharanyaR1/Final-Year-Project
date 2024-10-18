@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
   loadDustbins();
 });
 
+const depotIconPath = "../assets/home.png";
+
 function submitDustbin() {
   var latitude = document.getElementById("latitude").value;
   var longitude = document.getElementById("longitude").value;
@@ -186,21 +188,41 @@ function loadDustbins() {
       var dustbinsContainer = document.getElementById("dustbinsContainer");
       dustbinsContainer.innerHTML = "";
 
-      data.dustbins.forEach(function (dustbin) {
+      // Define custom icon for the depot using leaflet.awesome-markers
+      var depotIcon = L.icon({
+        iconUrl: "/assets/home.png", // Path to your custom red marker icon
+        iconSize: [30, 51], // Size of the icon
+        iconAnchor: [12, 41], // Point of the icon which will correspond to marker's location
+        popupAnchor: [1, -34], // Point from which the popup should open relative to the iconAnchor
+        // shadowUrl:
+        //   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png", // Optional shadow image
+        shadowSize: [41, 41], // Size of the shadow
+      });
+
+      data.dustbins.forEach(function (dustbin, index) {
         var dustbinElement = document.createElement("div");
         dustbinElement.classList.add("dustbin");
         dustbinElement.innerHTML = `
-      <p><strong>ID:</strong> ${dustbin.id}
-      <strong>Latitude:</strong> ${dustbin.latitude}
-      <strong>Longitude:</strong> ${dustbin.longitude}
-      <strong>Capacity:</strong> ${dustbin.capacity}
-      <button onclick="modifyDustbin(${dustbin.id})">Modify</button>
-      <button onclick="deleteDustbin(${dustbin.id})">Delete</button></p>
-  `;
+          <p><strong>ID:</strong> ${dustbin.id}
+          <strong>Latitude:</strong> ${dustbin.latitude}
+          <strong>Longitude:</strong> ${dustbin.longitude}
+          <strong>Capacity:</strong> ${dustbin.capacity}
+          <button onclick="modifyDustbin(${dustbin.id})">Modify</button>
+          <button onclick="deleteDustbin(${dustbin.id})">Delete</button></p>
+        `;
         dustbinsContainer.appendChild(dustbinElement);
 
         // Add markers to the map with labels from the server
-        var marker = L.marker([dustbin.latitude, dustbin.longitude]).addTo(map);
+        var marker;
+        if (index === 0) {
+          // Use custom icon for the depot
+          marker = L.marker([dustbin.latitude, dustbin.longitude], {
+            icon: depotIcon,
+          }).addTo(map);
+        } else {
+          // Use default marker for other dustbins
+          marker = L.marker([dustbin.latitude, dustbin.longitude]).addTo(map);
+        }
         marker.bindPopup("ID: " + dustbin.id); // Add ID label to the marker
       });
     })

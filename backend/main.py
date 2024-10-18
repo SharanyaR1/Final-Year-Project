@@ -1,4 +1,4 @@
-from flask import request, jsonify,render_template,Flask
+from flask import request, jsonify,render_template,Flask, send_from_directory
 from config import app, db
 from models import Dustbin
 import aux_functions
@@ -22,6 +22,10 @@ def index():
 @app.route('/pathplanning',methods=["GET"])
 def pathplanning():
     return render_template('pathplanning.html')
+
+@app.route('/assets/<path:filename>')
+def custom_static(filename):
+    return send_from_directory('../assets', filename)
 
 # New route to return adjacency matrix data
 @app.route('/get_adjacency_matrix', methods=["GET"])
