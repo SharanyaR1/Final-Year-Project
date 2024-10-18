@@ -36,6 +36,7 @@ def get_adjacency_matrix():
     
     return jsonify(adjacency_matrix)
 
+
 @app.route("/plan_optimized_route", methods=["POST"])
 def plan_optimized_route_handler():
     try:
@@ -46,13 +47,19 @@ def plan_optimized_route_handler():
             return jsonify({"error": "No dustbins data provided"}), 400
 
         # Convert dustbins_data to a list of tuples
-        dustbins = [(d['latitude'], d['longitude'], d['capacity']) for d in dustbins_data]
+        dustbins = [(float(d['latitude']), float(d['longitude']), d['capacity']) for d in dustbins_data]
+
+        print("Dustbins data received:", dustbins)
+        print("Number of vehicles:", num_vehicles)
 
         optimized_routes = aux_functions.plan_optimized_route(dustbins, num_vehicles)
+        print("Optimized routes:", optimized_routes)
+
         return jsonify({"optimized_routes": optimized_routes}), 200
     except Exception as e:
+        print("Error occurred:", str(e))
         return jsonify({"error": f"Failed to plan optimized route: {str(e)}"}), 500
-
+    
 @app.route("/add_random_dustbins", methods=["POST"])
 def add_random_dustbins():
     num_dustbins = request.json.get("numDustbins")

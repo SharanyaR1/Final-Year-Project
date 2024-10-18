@@ -1,6 +1,6 @@
-from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+import numpy as np
 
-def create_data_model(dustbins, num_vehicles=3):
+def create_data_model(dustbins, num_vehicles=6):
     """Stores the data for the problem."""
     data = {}
     data['locations'] = [(float(d[0]), float(d[1])) for d in dustbins]
@@ -22,47 +22,36 @@ def compute_euclidean_distance_matrix(locations):
                     (from_node[1] - to_node[1])**2)**0.5
     return distances
 
+def divide_points_equally(locations, num_vehicles):
+    """Divide the points into equal groups for each vehicle."""
+    num_points = len(locations) - 1  # Exclude depot
+    points_per_vehicle = num_points // num_vehicles
+    remainder = num_points % num_vehicles
 
-def plan_optimized_route(dustbins, num_vehicles=3):
-    """Solve the VRP problem."""
-    data = create_data_model(dustbins, num_vehicles)
-    distance_matrix = compute_euclidean_distance_matrix(data['locations'])
+    # Create empty routes for each vehicle
+    vehicle_routes = [[] for _ in range(num_vehicles)]
 
-    # Create the routing index manager.
-    manager = pywrapcp.RoutingIndexManager(len(data['locations']),
-                                           data['num_vehicles'], data['depot'])
+    # Distribute points evenly
+    point_index = 1  # Start from 1 (skip depot which is 0)
+    for i in range(num_vehicles):
+        num_points_to_assign = points_per_vehicle + (1 if i < remainder else 0)
+        vehicle_routes[i] = list(range(point_index, point_index + num_points_to_assign))
+        point_index += num_points_to_assign
 
-    # Create Routing Model.
-    routing = pywrapcp.RoutingModel(manager)
+    return vehicle_routes
 
-    def distance_callback(from_index, to_index):
-        """Returns the distance between the two nodes."""
-        from_node = manager.IndexToNode(from_index)
-        to_node = manager.IndexToNode(to_index)
-        return distance_matrix[from_node][to_node]
+def plan_optimized_route(dustbins, num_vehicles=6):
+    """Solve the VRP problem by forcing equal point distribution among vehicles."""
+    try:
+        data = create_data_model(dustbins, num_vehicles)
+        routes = divide_points_equally(data['locations'], num_vehicles)
 
-    transit_callback_index = routing.RegisterTransitCallback(distance_callback)
-    routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+        # Add depot (0) at start and end of each route
+        for route in routes:
+            route.insert(0, 0)  # Start at depot
+            route.append(0)     # End at depot
 
-    # Setting first solution heuristic.
-    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
-
-    # Solve the problem.
-    solution = routing.SolveWithParameters(search_parameters)
-
-    if not solution:
-        return []
-
-    # Get the routes for each vehicle.
-    routes = []
-    for vehicle_id in range(data['num_vehicles']):
-        index = routing.Start(vehicle_id)
-        route = []
-        while not routing.IsEnd(index):
-            route.append(manager.IndexToNode(index))
-            index = solution.Value(routing.NextVar(index))
-        route.append(manager.IndexToNode(index))
-        routes.append(route)
-    return routes
+        return routes
+    except Exception as e:
+        print("Error in plan_optimized_route:", str(e))
+        raise
