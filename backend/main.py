@@ -2,7 +2,7 @@ from flask import request, jsonify,render_template,Flask, send_from_directory
 from config import app, db
 from models import Dustbin
 import aux_functions
-# import thingspeak
+import math
 import random
 #change to your relative system path 
 app = Flask(__name__, template_folder='../frontend', static_folder='../static')
@@ -42,6 +42,7 @@ def get_adjacency_matrix():
 
 
 @app.route("/plan_optimized_route", methods=["POST"])
+@app.route("/plan_optimized_route", methods=["POST"])
 def plan_optimized_route_handler():
     try:
         dustbins_data = request.json.get("dustbins")
@@ -71,8 +72,15 @@ def add_random_dustbins():
         return jsonify({"message": "Number of dustbins is required"}), 400
 
     # Define the bounding box for Banashankari area of Bangalore
-    min_lat, max_lat = 12.92, 12.95
-    min_lon, max_lon = 77.54, 77.58
+    center_lat, center_lon = 12.908214, 77.564112
+    range_km = 2
+
+    # Calculate the bounding box
+    lat_range = range_km / 111  # 1 degree of latitude is approximately 111 km
+    lon_range = range_km / (111 * math.cos(math.radians(center_lat)))  # Adjust for longitude
+
+    min_lat, max_lat = center_lat - lat_range, center_lat + lat_range
+    min_lon, max_lon = center_lon - lon_range, center_lon + lon_range
     dustbins = []
     for _ in range(int(num_dustbins)):
         latitude = random.uniform(min_lat, max_lat)
@@ -140,6 +148,18 @@ def delete_dustbin(user_id):
     db.session.delete(dustbin)
     db.session.commit()
     return jsonify({"message": "Dustbin deleted!"}), 200
+
+@app.route("/clear_all_dustbins", methods=["DELETE"])
+def clear_all_dustbins():
+    try:
+        num_deleted = db.session.query(Dustbin).delete()
+        db.session.commit()
+        return jsonify({"message": f"All dustbins cleared! Total deleted: {num_deleted}"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Failed to clear dustbins: {str(e)}"}), 500
+
+
 
 # def create_dustbin_from_thingspeak():
 #     latitude,longitude,capacity = thingspeak.dustbins()

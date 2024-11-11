@@ -9,6 +9,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.min.js"></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+
+
 </head>
 <body>
 <div class="container">
@@ -28,21 +32,25 @@
     </div>
     <button type="submit">Add Dustbin</button>
   </form>
-  <h2>Add Random Dustbins</h2>
+  <h2>Add Dustbins</h2>
   <form id="randomDustbinForm">
     <div class="form-group">
-      <label for="numDustbins">Number of Random Dustbins:</label>
+      <label for="numDustbins">Number of Dustbins to be added:</label>
       <input type="number" id="numDustbins" name="numDustbins" required>
     </div>
-    <button type="submit">Add Random Dustbins</button>
+    <button type="submit">Add Dustbins</button>
   </form>
   
   <h2>Available Dustbins</h2>
   <div id="dustbinsContainer" style="margin-top: 20px;">
   </div>
+
+  <h2>Clear All Dustbins</h2>
+  <button type="submit" id="clearAllDustbinsButton">Clear All Dustbins</button>
+
   <h2>Optimized Route</h2>
   <div id="optimizedRouteContainer" style="margin-top: 20px;">
-    <button id="calculateRouteButton">Calculate Optimized Route</button>
+    <button type="submit" id="calculateRouteButton">Calculate Optimized Route</button>
     <p id="optimizedRouteSequence"></p>
   </div>
   <h2>Locations</h2>
