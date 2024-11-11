@@ -217,6 +217,17 @@ function loadDustbins() {
       var dustbinsContainer = document.getElementById("dustbinsContainer");
       dustbinsContainer.innerHTML = "";
 
+      // Define custom icon for the depot using leaflet.awesome-markers
+      var depotIcon = L.icon({
+        iconUrl: "/assets/home.png", // Path to your custom red marker icon
+        iconSize: [30, 51], // Size of the icon
+        iconAnchor: [12, 41], // Point of the icon which will correspond to marker's location
+        popupAnchor: [1, -34], // Point from which the popup should open relative to the iconAnchor
+        // shadowUrl:
+        //   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png", // Optional shadow image
+        shadowSize: [41, 41], // Size of the shadow
+      });
+
       data.dustbins.forEach(function (dustbin, index) {
         var dustbinElement = document.createElement("div");
         dustbinElement.classList.add("dustbin");
@@ -232,6 +243,13 @@ function loadDustbins() {
 
         // Add markers to the map with labels from the server
         var marker;
+        var dustbinIcon = L.icon({
+          iconUrl: "/assets/dustbin.png", // Path to your dustbin logo image
+          iconSize: [25, 40], // Size of the icon (adjust as needed)
+          iconAnchor: [12, 41], // Anchor point of the icon (adjust as needed)
+          popupAnchor: [1, -34],
+          // Position of the popup (adjust as needed)
+        });
         if (index === 0) {
           // Use custom icon for the depot
           marker = L.marker([dustbin.latitude, dustbin.longitude], {
@@ -239,7 +257,9 @@ function loadDustbins() {
           }).addTo(map);
         } else {
           // Use default marker for other dustbins
-          marker = L.marker([dustbin.latitude, dustbin.longitude]).addTo(map);
+          var marker = L.marker([dustbin.latitude, dustbin.longitude], {
+            icon: dustbinIcon,
+          }).addTo(map);
         }
         marker.bindPopup("ID: " + dustbin.id); // Add ID label to the marker
       });
