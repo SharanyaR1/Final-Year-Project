@@ -65,6 +65,38 @@ def plan_optimized_route_handler():
         print("Error occurred:", str(e))
         return jsonify({"error": f"Failed to plan optimized route: {str(e)}"}), 500
     
+# @app.route("/add_random_dustbins", methods=["POST"])
+# def add_random_dustbins():
+#     num_dustbins = request.json.get("numDustbins")
+#     if not num_dustbins:
+#         return jsonify({"message": "Number of dustbins is required"}), 400
+
+#     # Define the bounding box for Banashankari area of Bangalore
+#     center_lat, center_lon = 12.908214, 77.564112
+#     range_km = 2
+
+#     # Calculate the bounding box
+#     lat_range = range_km / 111  # 1 degree of latitude is approximately 111 km
+#     lon_range = range_km / (111 * math.cos(math.radians(center_lat)))  # Adjust for longitude
+
+#     min_lat, max_lat = center_lat - lat_range, center_lat + lat_range
+#     min_lon, max_lon = center_lon - lon_range, center_lon + lon_range
+#     dustbins = []
+
+#     for _ in range(int(num_dustbins)):
+#         latitude = random.uniform(min_lat, max_lat)
+#         longitude = random.uniform(min_lon, max_lon)
+#         capacity = random.randint(1, 100) 
+#         dustbin = Dustbin(latitude=latitude, longitude=longitude, capacity=capacity)
+#         dustbins.append(dustbin)
+#         db.session.add(dustbin)  # Add the dustbin to the session
+#     db.session.commit()  # Commit the session to save all dustbins
+#     return jsonify({"message": f"{num_dustbins} random dustbins added"}), 201
+
+
+
+
+
 @app.route("/add_random_dustbins", methods=["POST"])
 def add_random_dustbins():
     num_dustbins = request.json.get("numDustbins")
@@ -82,15 +114,33 @@ def add_random_dustbins():
     min_lat, max_lat = center_lat - lat_range, center_lat + lat_range
     min_lon, max_lon = center_lon - lon_range, center_lon + lon_range
     dustbins = []
+
+    # Check if the fixed dustbin already exists
+    fixed_lat = 12.9092
+    fixed_lon = 77.5666
+    fixed_capacity = 10
+    fixed_dustbin = Dustbin.query.filter_by(latitude=fixed_lat, longitude=fixed_lon).first()
+    if not fixed_dustbin:
+        fixed_dustbin = Dustbin(latitude=fixed_lat, longitude=fixed_lon, capacity=fixed_capacity)
+        db.session.add(fixed_dustbin)
+        db.session.commit()
+    dustbins.append(fixed_dustbin)
+
+    # Generate the remaining random dustbins
     for _ in range(int(num_dustbins)):
         latitude = random.uniform(min_lat, max_lat)
         longitude = random.uniform(min_lon, max_lon)
-        capacity = random.randint(1, 100) 
+        capacity = random.randint(1, 100)
         dustbin = Dustbin(latitude=latitude, longitude=longitude, capacity=capacity)
+        db.session.add(dustbin)
         dustbins.append(dustbin)
-        db.session.add(dustbin)  # Add the dustbin to the session
-    db.session.commit()  # Commit the session to save all dustbins
-    return jsonify({"message": f"{num_dustbins} random dustbins added"}), 201
+    db.session.commit()
+
+    # Convert dustbins to a serializable format
+    dustbins_data = [{"id": dustbin.id, "latitude": dustbin.latitude, "longitude": dustbin.longitude, "capacity": dustbin.capacity} for dustbin in dustbins]
+
+    return jsonify({"message": f"{num_dustbins} random dustbins added", "dustbins": dustbins_data}), 201
+
 
 
 @app.route("/dustbins", methods=["GET"])
