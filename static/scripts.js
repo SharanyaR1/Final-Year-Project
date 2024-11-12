@@ -118,7 +118,7 @@ function calculateOptimizedRoute() {
       });
       var requestData = {
         dustbins: dustbinsWithCoords,
-        num_vehicles: 5,
+        num_vehicles: 10,
       };
       fetch("http://127.0.0.1:5000/plan_optimized_route", {
         method: "POST",
