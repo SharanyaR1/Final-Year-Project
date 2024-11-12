@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   loadDustbins();
+
+  recalculateRoutesPeriodically();
 });
 
 const depotIconPath = "../assets/home.png";
@@ -208,6 +210,8 @@ function calculateOptimizedRoute() {
     .catch(function (error) {
       alert("An error occurred while fetching dustbins: " + error.message);
     });
+
+  recalculateRoutesPeriodically();
 }
 
 function animateTruck(routeCoords, color) {
@@ -223,15 +227,49 @@ function animateTruck(routeCoords, color) {
   }).addTo(map);
 
   var index = 0;
+  var step = 0;
+  var steps = 100; // Number of steps for interpolation
+  var baseDelay = 20; // Base delay between steps in milliseconds
+  var stopDelay = 2000; // Delay at each dustbin location in milliseconds
+
+  function interpolate(start, end, factor) {
+    return start + (end - start) * factor;
+  }
+
+  function calculateDistance(start, end) {
+    var dx = end[0] - start[0];
+    var dy = end[1] - start[1];
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
   function moveTruck() {
     if (index < routeCoords.length - 1) {
-      index++;
-      truckMarker.setLatLng([routeCoords[index][1], routeCoords[index][0]]);
-      setTimeout(moveTruck, 1000); // Adjust the speed of the animation here
+      var start = routeCoords[index];
+      var end = routeCoords[index + 1];
+      var lat = interpolate(start[1], end[1], step / steps);
+      var lng = interpolate(start[0], end[0], step / steps);
+      truckMarker.setLatLng([lat, lng]);
+
+      if (step < steps) {
+        step++;
+        var distance = calculateDistance(start, end);
+        var delay = baseDelay * distance; // Adjust delay based on distance
+        setTimeout(moveTruck, delay); // Continue moving
+      } else {
+        step = 0;
+        index++;
+        setTimeout(moveTruck, stopDelay); // Stop at the dustbin location
+      }
     }
   }
 
   moveTruck();
+}
+
+function recalculateRoutesPeriodically() {
+  setInterval(function () {
+    calculateOptimizedRoute(dustbinMarkers);
+  }, 3000); // Recalculate routes every 5 minutes
 }
 
 function loadDustbins() {

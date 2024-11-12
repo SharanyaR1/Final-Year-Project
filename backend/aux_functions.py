@@ -9,6 +9,7 @@ def create_data_model(dustbins, num_vehicles=10, vehicle_capacity=100):
     data['depot'] = 0  # Assuming the first point is the depot
     data['demands'] = [0] + [d[2] for d in dustbins]  # First demand is 0 for the depot
     data['vehicle_capacities'] = [vehicle_capacity] * num_vehicles
+    data['time_windows'] = [(0, 7200)] * len(data['locations'])  # 2-hour window for each location
     return data
 
 def compute_euclidean_distance_matrix(locations):
@@ -27,7 +28,7 @@ def compute_euclidean_distance_matrix(locations):
     return distances
 
 def plan_optimized_route(dustbins, num_vehicles=6, vehicle_capacity=100):
-    """Plan routes using CVRP algorithm."""
+    """Plan routes using CVRP algorithm with time windows."""
     data = create_data_model(dustbins, num_vehicles, vehicle_capacity)
     distance_matrix = compute_euclidean_distance_matrix(data['locations'])
 
@@ -54,6 +55,22 @@ def plan_optimized_route(dustbins, num_vehicles=6, vehicle_capacity=100):
         True,  # start cumul to zero
         'Capacity'
     )
+
+    # Add time windows
+    time = 'Time'
+    routing.AddDimension(
+        transit_callback_index,
+        7200,  # allow waiting time
+        7200,  # maximum time per vehicle
+        False,  # Don't force start cumul to zero
+        time
+    )
+    time_dimension = routing.GetDimensionOrDie(time)
+    for location_idx, time_window in enumerate(data['time_windows']):
+        if location_idx == 0:
+            continue
+        index = manager.NodeToIndex(location_idx)
+        time_dimension.CumulVar(index).SetRange(time_window[0], time_window[1])
 
     # Add penalty for not visiting certain locations
     penalty = 1000
