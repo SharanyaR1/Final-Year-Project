@@ -130,7 +130,7 @@ def add_random_dustbins():
     for _ in range(int(num_dustbins)):
         latitude = random.uniform(min_lat, max_lat)
         longitude = random.uniform(min_lon, max_lon)
-        capacity = random.randint(1, 100)
+        capacity = random.randint(1, 10) 
         dustbin = Dustbin(latitude=latitude, longitude=longitude, capacity=capacity)
         db.session.add(dustbin)
         dustbins.append(dustbin)
