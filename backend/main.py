@@ -105,7 +105,7 @@ def add_random_dustbins():
 
     # Define the bounding box for Banashankari area of Bangalore
     center_lat, center_lon = 12.908214, 77.564112
-    range_km = 2
+    range_km = 0.5
 
     # Calculate the bounding box
     lat_range = range_km / 111  # 1 degree of latitude is approximately 111 km

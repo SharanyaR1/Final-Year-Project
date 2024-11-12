@@ -184,6 +184,12 @@ function calculateOptimizedRoute() {
                   },
                 }).addTo(map);
                 map.fitBounds(routePolyline.getBounds());
+
+                // Animate the truck's movement along the route
+                animateTruck(
+                  routeGeoJSON.coordinates,
+                  colors[index % colors.length]
+                );
               })
               .catch(function (error) {
                 alert(
@@ -202,6 +208,30 @@ function calculateOptimizedRoute() {
     .catch(function (error) {
       alert("An error occurred while fetching dustbins: " + error.message);
     });
+}
+
+function animateTruck(routeCoords, color) {
+  var truckIcon = L.icon({
+    iconUrl: "/assets/truck.png", // Path to your truck icon
+    iconSize: [25, 41], // Size of the icon
+    iconAnchor: [12, 41], // Point of the icon which will correspond to marker's location
+    popupAnchor: [1, -34], // Point from which the popup should open relative to the iconAnchor
+  });
+
+  var truckMarker = L.marker([routeCoords[0][1], routeCoords[0][0]], {
+    icon: truckIcon,
+  }).addTo(map);
+
+  var index = 0;
+  function moveTruck() {
+    if (index < routeCoords.length - 1) {
+      index++;
+      truckMarker.setLatLng([routeCoords[index][1], routeCoords[index][0]]);
+      setTimeout(moveTruck, 1000); // Adjust the speed of the animation here
+    }
+  }
+
+  moveTruck();
 }
 
 function loadDustbins() {

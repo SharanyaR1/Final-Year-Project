@@ -1,7 +1,7 @@
 import numpy as np
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
-def create_data_model(dustbins, num_vehicles=10, vehicle_capacity=700):
+def create_data_model(dustbins, num_vehicles=10, vehicle_capacity=100):
     """Stores the data for the problem."""
     data = {}
     data['locations'] = [(float(d[0]), float(d[1])) for d in dustbins]
