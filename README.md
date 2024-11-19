@@ -25,73 +25,36 @@ Routecraft is a sophisticated solution designed to optimize the routes of garbag
    ```sh
    git clone https://github.com/SharanyaR1/Final-Year-Project
    cd Final-Year-Project
-   ```
 
-2. Create a virtual environment:
+   Create a virtual environment:
 
-   ```sh
-   Delete the "env" folder if present already, and then follow the below steps
-   python -m venv env
-   On Windows use `env\Scripts\activate` # On Linux use `env/bin/activate`
-   Try using Command prompt if Windows Shell is showing error for the above command
-   ```
+2. Install the required packages:
 
-3. Install the required packages:
+Run the application:
+After installing the dependencies, you can run the application using the following command:
 
-   ```sh
-   pip install -r requirements.txt
-   ```
-   
+      ```sh
+      Copy code
+      python app.py
+      This will start the system and you can begin interacting with the interface.
 
-4. Run the application:
-   ```sh
-   `cd backend`
-   python main.py
-   ```
+##Usage
+Input Data: Provide the necessary data such as waste collection points, truck capacities, and other relevant parameters.
+Generate Routes: Use the interface to generate optimized routes for the garbage trucks.
+View Routes: Visualize the optimized routes on the map.
+Adjust Routes: Make real-time adjustments to routes based on current conditions.
 
-## Usage
 
-1. **Input Data**: Provide the necessary data such as waste collection points, truck capacities, and other relevant parameters.
-2. **Generate Routes**: Use the interface to generate optimized routes for the garbage trucks.
-3. **View Routes**: Visualize the optimized routes on the map.
-4. **Adjust Routes**: Make real-time adjustments to routes based on current conditions.
-
-## Demo Images
-<div style="display: flex; justify-content: center; gap: 10px;">
-  <img src="https://github.com/MuhmmadAbrar/Routecraft-A-garbage-truck-route-optimization-system./blob/main/assets/001.jpeg" style="max-height: 100px;" alt="Smart Dustbin" style = "height:50px">
-  <img src="https://github.com/MuhmmadAbrar/Routecraft-A-garbage-truck-route-optimization-system./blob/main/assets/002.jpeg" style="max-height: 100px;" alt="Dustbin Details Fetched from Thingspeak">
-  <img src="https://github.com/MuhmmadAbrar/Routecraft-A-garbage-truck-route-optimization-system./blob/main/assets/003.jpeg" style="max-height: 100px;" alt="Optimized Route">
-</div>
-
-## **Demo Video**
-Our demo of this project can be viewed at: [Demo Video](https://drive.google.com/file/d/1xQSirpzKFLr_wZ1K21lFBSGWG9wbacFl/view?usp=drive_link)
-
-## Contribution
-
+##Contribution
 We welcome contributions from the community! If you'd like to contribute, please follow these steps:
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -am 'Add new feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Create a new Pull Request.
-
+Fork the repository.
+Create a new branch (git checkout -b feature-branch).
+Make your changes.
+Commit your changes (git commit -am 'Add new feature').
+Push to the branch (git push origin feature-branch).
+Create a new Pull Request.
 Please ensure that your code adheres to the existing coding conventions and includes appropriate tests.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For any questions or suggestions, feel free to open an issue or contact the project maintainer:
-
-- **Muhmmad Abrar**: [GitHub Profile](https://github.com/MuhmmadAbrar)
-- **Srinidhi K**: [GitHub Profile](https://github.com/Srinidhi-Krishnan30)
-- **Mhanjhusriee B**: [GitHub Profile](https://github.com/Scarlet-15)
-- **Harinee J**: [GitHub Profile](https://github.com/Harxnee)
-
----
-
-Thank you for using Routecraft! Together, we can make waste collection more efficient and environmentally friendly.
+##License
+This project is licensed under the MIT License - see the LICENSE file for details.
